@@ -6,6 +6,7 @@
 #include "bird.h"
 #include "menu.h"
 #include "game_environment.h"
+#include "tap.h"
 #include "common.h"
 
 using namespace sf;
@@ -19,9 +20,10 @@ private:
     Bird bird;
     GameEnvironment environment;
     Menu menu;
+    Tap tap;
 
 public:
-    Game() : bird(textureFileBird), environment(textureFileGameEnvironment), menu(textureFileMenu) {}
+    Game() : bird(textureFileBird), environment(textureFileGameEnvironment), menu(textureFileMenu), tap(textureFileTap) {}
 
     void drawMenu(RenderWindow &window) {
         window.draw(environment.background_sprite);
@@ -32,11 +34,18 @@ public:
         window.draw(bird.bird_sprite);
     }
 
+    void drawTap(RenderWindow &window) {
+        window.draw(environment.background_sprite);
+        window.draw(environment.base1_sprite);
+        window.draw(environment.base2_sprite);
+        window.draw(bird.bird_sprite);
+        window.draw(tap.tap_sprite);
+        window.draw(tap.get_ready_sprite);
+    }
+
     void run() {
         RenderWindow window(VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Flappy Bird", Style::Close);
         window.setFramerateLimit(60);
-
-        bool isMenu = true;
 
         Clock clock;
 
@@ -59,6 +68,9 @@ public:
                     if(event.mouseButton.button == Mouse::Left) {
                         if(menu.button_play_sprite.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
                             isMenu = false;
+                            isTap = true;
+
+                            bird.setPosition(30, 150);
                         }
                     }
                 }
@@ -72,12 +84,9 @@ public:
             if (isMenu) {
                 drawMenu(window);
             }
-            
-            else {
-                window.draw(environment.background_sprite);
-                window.draw(environment.base1_sprite);
-                window.draw(environment.base2_sprite);
-                window.draw(bird.bird_sprite);
+
+            if (isTap) {
+                drawTap(window);
             }
 
             window.display();

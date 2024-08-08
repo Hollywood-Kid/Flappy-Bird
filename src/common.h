@@ -21,6 +21,13 @@ const std::vector<std::string> textureFileMenu = {
     "Textures/Mobile - Flappy Bird - Version 12 Sprites.png"
 };
 
+const std::string textureFileTap = {
+    "Textures/message.png"
+};
+
+bool isMenu = true;
+bool isTap = false;
+
 const int BLACK_SCREEN_DURATION = 2000; // 2 seconds
 
 #endif // COMMON_H

@@ -41,4 +41,8 @@ public:
 
         bird_sprite.setTexture(bird_texture[(int)curFrame]);
     }
+
+    void setPosition(int x, int y) {
+        bird_sprite.setPosition(x, y);
+    }
 };

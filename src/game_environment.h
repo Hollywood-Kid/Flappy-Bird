@@ -34,7 +34,7 @@ public:
         base1_sprite.setPosition(0, WINDOW_HEIGHT - 112);
         base2_sprite.setPosition(288, WINDOW_HEIGHT - 112);
     }
-
+    
     void base_update(float time) {
         base1_sprite.move(-0.2f * time, 0);
         pos_base = base1_sprite.getPosition();
