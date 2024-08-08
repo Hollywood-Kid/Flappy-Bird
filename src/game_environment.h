@@ -11,7 +11,6 @@ class GameEnvironment
 private:
     const int WINDOW_WIDTH = 288;
     const int WINDOW_HEIGHT = 512;
-    
 public:
     Texture background_texture;
     Texture base1_texture;
@@ -33,11 +32,10 @@ public:
         base2_sprite.setTexture(base2_texture);
 
         base1_sprite.setPosition(0, WINDOW_HEIGHT - 112);
-        base2_sprite.setPosition(Vector2f(288, WINDOW_HEIGHT - 112));
+        base2_sprite.setPosition(288, WINDOW_HEIGHT - 112);
     }
 
     void base_update(float time) {
-        // Update base animation
         base1_sprite.move(-0.2f * time, 0);
         pos_base = base1_sprite.getPosition();
         if(pos_base.x < -288) base1_sprite.setPosition(0, pos_base.y);
