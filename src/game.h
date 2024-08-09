@@ -39,7 +39,9 @@ public:
         window.draw(environment.base1_sprite);
         window.draw(environment.base2_sprite);
         window.draw(bird.bird_sprite);
-        window.draw(tap.tap_sprite);
+        if(tap.isVisible) {
+            window.draw(tap.tap_sprite);
+        }
         window.draw(tap.get_ready_sprite);
     }
 
@@ -66,11 +68,23 @@ public:
 
                 if(event.type == Event::MouseButtonPressed) {
                     if(event.mouseButton.button == Mouse::Left) {
-                        if(menu.button_play_sprite.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
-                            isMenu = false;
-                            isTap = true;
+                        if (isTap) {
+                            bird.jump();  // Прыжок птички
+                            isTap = false;
+                            isStart = true;
+                        } 
+                        
+                        else if (isMenu) {
+                            if(menu.button_play_sprite.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
+                                isMenu = false;
+                                isTap = true;
 
-                            bird.setPosition(30, 150);
+                                bird.setPosition(30, 150);
+                            }
+                        }
+
+                        else if (isStart){
+                            bird.jump();
                         }
                     }
                 }
@@ -78,6 +92,7 @@ public:
 
             environment.base_update(time);
             bird.update(time);
+            tap.tap_update();
 
             window.clear();
 
@@ -87,6 +102,15 @@ public:
 
             if (isTap) {
                 drawTap(window);
+            }
+
+            if (isStart) {
+                // Отрисовка игры в процессе
+                window.draw(environment.background_sprite);
+                window.draw(environment.base1_sprite);
+                window.draw(environment.base2_sprite);
+                window.draw(bird.bird_sprite);
+                // Здесь можно добавить отрисовку труб и других объектов
             }
 
             window.display();

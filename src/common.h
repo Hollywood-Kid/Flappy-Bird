@@ -27,6 +27,7 @@ const std::string textureFileTap = {
 
 bool isMenu = true;
 bool isTap = false;
+bool isStart = false;
 
 const int BLACK_SCREEN_DURATION = 2000; // 2 seconds
 
