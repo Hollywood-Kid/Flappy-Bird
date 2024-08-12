@@ -7,7 +7,10 @@
 #include "menu.h"
 #include "game_environment.h"
 #include "tap.h"
+#include "pipe.h"
+#include "score.h"
 #include "common.h"
+#include "sound.h"
 
 using namespace sf;
 
@@ -20,10 +23,29 @@ private:
     Bird bird;
     GameEnvironment environment;
     Menu menu;
+    Pipe pipe;
     Tap tap;
+    Score score;
+    setSound sound;
+
+    FloatRect birdBounds;
+    FloatRect topPipeBounds;
+    FloatRect bottomPipeBounds;
+
+    bool pointAwarded;
 
 public:
-    Game() : bird(textureFileBird), environment(textureFileGameEnvironment), menu(textureFileMenu), tap(textureFileTap) {}
+    Game() : bird(textureFileBird), 
+    environment(textureFileGameEnvironment), 
+    menu(textureFileMenu), tap(textureFileTap), 
+    pipe(textureFilePipe), score(textureFileScore)
+    {
+        birdBounds = bird.bird_sprite.getGlobalBounds();
+        topPipeBounds = pipe.top_pipe.getGlobalBounds();
+        bottomPipeBounds = pipe.bottom_pipe.getGlobalBounds();
+
+        pointAwarded = false;
+    }
 
     void drawMenu(RenderWindow &window) {
         window.draw(environment.background_sprite);
@@ -44,6 +66,17 @@ public:
         }
         window.draw(tap.get_ready_sprite);
     }
+
+    void drawStart(RenderWindow &window) {
+        window.draw(environment.background_sprite); // Отрисовка фона
+        window.draw(pipe.bottom_pipe);
+        window.draw(pipe.top_pipe);          // Отрисовка птички перед трубами
+        window.draw(environment.base1_sprite);
+        window.draw(environment.base2_sprite);
+        window.draw(bird.bird_sprite);
+        score.draw(window);
+    }
+
 
     void run() {
         RenderWindow window(VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Flappy Bird", Style::Close);
@@ -69,7 +102,8 @@ public:
                 if(event.type == Event::MouseButtonPressed) {
                     if(event.mouseButton.button == Mouse::Left) {
                         if (isTap) {
-                            bird.jump();  // Прыжок птички
+                            bird.jump();
+                            sound.flap.play();
                             isTap = false;
                             isStart = true;
                         } 
@@ -85,14 +119,26 @@ public:
 
                         else if (isStart){
                             bird.jump();
+                            sound.flap.play();
                         }
                     }
                 }
             }
-
             environment.base_update(time);
             bird.update(time);
             tap.tap_update();
+            pipe.update(time);
+
+            // Начисление баллов при прохождении трубы
+            if (pipe.bottom_pipe.getPosition().x < bird.bird_sprite.getPosition().x && !pointAwarded){
+                score.addScore(1);
+                sound.bonus.play();
+                pointAwarded = true;
+            }
+
+            if(pipe.bottom_pipe.getPosition().x == WINDOW_WIDTH) {
+                pointAwarded = false;
+            }
 
             window.clear();
 
@@ -105,12 +151,7 @@ public:
             }
 
             if (isStart) {
-                // Отрисовка игры в процессе
-                window.draw(environment.background_sprite);
-                window.draw(environment.base1_sprite);
-                window.draw(environment.base2_sprite);
-                window.draw(bird.bird_sprite);
-                // Здесь можно добавить отрисовку труб и других объектов
+                drawStart(window);
             }
 
             window.display();

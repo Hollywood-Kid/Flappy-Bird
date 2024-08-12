@@ -25,6 +25,23 @@ const std::string textureFileTap = {
     "Textures/message.png"
 };
 
+const std::string textureFilePipe = {
+    "Textures/pipe-green.png"
+};
+
+const std::vector<std::string> textureFileScore = {
+    "Textures/0.png",
+    "Textures/1.png",
+    "Textures/2.png",
+    "Textures/3.png",
+    "Textures/4.png",
+    "Textures/5.png",
+    "Textures/6.png",
+    "Textures/7.png",
+    "Textures/8.png",
+    "Textures/9.png"
+};
+
 bool isMenu = true;
 bool isTap = false;
 bool isStart = false;
