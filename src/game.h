@@ -9,6 +9,7 @@
 #include "tap.h"
 #include "pipe.h"
 #include "score.h"
+#include "screen_fader.h"
 #include "common.h"
 #include "sound.h"
 
@@ -77,7 +78,6 @@ public:
         score.draw(window);
     }
 
-
     void run() {
         RenderWindow window(VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Flappy Bird", Style::Close);
         window.setFramerateLimit(60);
@@ -104,6 +104,7 @@ public:
                         if (isTap) {
                             bird.jump();
                             sound.flap.play();
+
                             isTap = false;
                             isStart = true;
                         } 
@@ -114,6 +115,7 @@ public:
                                 isTap = true;
 
                                 bird.setPosition(30, 150);
+                                sound.swoosh.play();
                             }
                         }
 
@@ -133,6 +135,7 @@ public:
             if (pipe.bottom_pipe.getPosition().x < bird.bird_sprite.getPosition().x && !pointAwarded){
                 score.addScore(1);
                 sound.bonus.play();
+                
                 pointAwarded = true;
             }
 

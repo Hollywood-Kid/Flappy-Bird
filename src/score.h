@@ -47,7 +47,7 @@ public:
             digitSprite.setPosition(currentX, 0);
 
             // Обновляем текущую позицию X с учётом ширины текущей цифры и небольшого зазора
-            currentX += digitSprite.getGlobalBounds().width + 2;
+            currentX += digitSprite.getGlobalBounds().width;
 
             digits.push_back(digitSprite);
         }
