@@ -9,7 +9,6 @@
 #include "tap.h"
 #include "pipe.h"
 #include "score.h"
-#include "screen_fader.h"
 #include "common.h"
 #include "sound.h"
 
@@ -83,6 +82,7 @@ public:
         window.setFramerateLimit(60);
 
         Clock clock;
+        bool gameOver = false;  // Флаг завершения игры
 
         while (window.isOpen())
         {
@@ -119,28 +119,42 @@ public:
                             }
                         }
 
-                        else if (isStart){
+                        else if (isStart && !gameOver) {
                             bird.jump();
                             sound.flap.play();
                         }
                     }
                 }
             }
-            environment.base_update(time);
-            bird.update(time);
-            tap.tap_update();
-            pipe.update(time);
 
-            // Начисление баллов при прохождении трубы
-            if (pipe.bottom_pipe.getPosition().x < bird.bird_sprite.getPosition().x && !pointAwarded){
-                score.addScore(1);
-                sound.bonus.play();
-                
-                pointAwarded = true;
-            }
+            if (!gameOver) {
+                environment.base_update(time);
+                bird.update(time);
+                tap.tap_update();
+                pipe.update(time);
 
-            if(pipe.bottom_pipe.getPosition().x == WINDOW_WIDTH) {
-                pointAwarded = false;
+                // Начисление баллов при прохождении трубы
+                if (pipe.bottom_pipe.getPosition().x < bird.bird_sprite.getPosition().x && !pointAwarded){
+                    score.addScore(1);
+                    sound.bonus.play();
+                    
+                    pointAwarded = true;
+                }
+
+                if(pipe.bottom_pipe.getPosition().x == WINDOW_WIDTH) {
+                    pointAwarded = false;
+                }
+
+                // Проверка на столкновение с трубой или землей
+                birdBounds = bird.bird_sprite.getGlobalBounds();
+                topPipeBounds = pipe.top_pipe.getGlobalBounds();
+                bottomPipeBounds = pipe.bottom_pipe.getGlobalBounds();
+
+                if (birdBounds.intersects(topPipeBounds) || birdBounds.intersects(bottomPipeBounds) || bird.bird_sprite.getPosition().y + birdBounds.height >= environment.base1_sprite.getPosition().y) {
+                    gameOver = true;
+                    sound.hit.play();
+                    // Вы можете добавить задержку перед возвратом в меню или показом экрана завершения
+                }
             }
 
             window.clear();
@@ -155,6 +169,11 @@ public:
 
             if (isStart) {
                 drawStart(window);
+            }
+
+            if (gameOver) {
+                // Можно отобразить экран завершения игры или вернуться в меню
+                // drawGameOver(window); - нужно реализовать функцию для отображения экрана завершения игры
             }
 
             window.display();

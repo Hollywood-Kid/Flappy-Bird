@@ -53,7 +53,7 @@ public:
         }
     }
 
-    void draw(RenderWindow &window) {
+    void draw(RenderWindow &window) const{
         for (auto& digit : digits) {
             window.draw(digit);
         }
