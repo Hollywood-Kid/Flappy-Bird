@@ -1,3 +1,5 @@
+#pragma once
+
 #include <SFML/Graphics.hpp>
 
 using namespace std;
@@ -53,7 +55,7 @@ public:
         }
     }
 
-    void draw(RenderWindow &window) const{
+    void draw(RenderWindow &window) {
         for (auto& digit : digits) {
             window.draw(digit);
         }

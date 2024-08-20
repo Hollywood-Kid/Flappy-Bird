@@ -1,7 +1,9 @@
+#pragma once
+
 #include "SFML/Graphics.hpp"
+#include "GameStateManager.h"
 #include <random>
 #include <iostream>
-#include "common.h"
 
 using namespace sf;
 using namespace std;
@@ -46,8 +48,8 @@ public:
         top_pipe.setPosition(288, y - gap);
     }
 
-    void update(float time) {
-        if (isStart) {
+    void update(float time, GameStateManager& state) {
+        if (state.isStart()) {
             bottom_pipe.move(-0.15f * time, 0);
             top_pipe.move(-0.15f * time, 0);
 

@@ -16,6 +16,7 @@ public:
 
     Clock blinkClock;          // Timer for blinking
     float blinkInterval = 0.5f; // Time interval for blinking (in seconds)
+
     bool isVisible = true;     // Visibility state of the tap sprite
 
     Tap(const string& textureFile) {
@@ -31,13 +32,11 @@ public:
     }
 
     void tap_update() {
-        // Check if it's time to toggle visibility
         if (blinkClock.getElapsedTime().asSeconds() >= blinkInterval) {
             isVisible = !isVisible;  // Toggle visibility
             blinkClock.restart();    // Restart the clock
         }
 
-        // Update sprite visibility
-        tap_sprite.setColor(Color(255, 255, 255, isVisible ? 255 : 0)); // Fully opaque or fully transparent
+        tap_sprite.setColor(Color(255, 255, 255, isVisible ? 255 : 0));
     }
 };

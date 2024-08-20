@@ -1,16 +1,18 @@
-// game.h
 #ifndef GAME_H
 #define GAME_H
 
 #include <SFML/Graphics.hpp>
 #include "bird.h"
 #include "menu.h"
+#include "game_over.h"
 #include "game_environment.h"
 #include "tap.h"
 #include "pipe.h"
 #include "score.h"
 #include "common.h"
 #include "sound.h"
+#include "GameStateManager.h"
+#include "InputHandler.h"
 
 using namespace sf;
 
@@ -27,26 +29,29 @@ private:
     Tap tap;
     Score score;
     setSound sound;
+    GameOver game_over;
 
     FloatRect birdBounds;
     FloatRect topPipeBounds;
     FloatRect bottomPipeBounds;
 
+    GameStateManager stateManager;  // Менеджер состояний игры
+
     bool pointAwarded;
-
 public:
-    Game() : bird(textureFileBird), 
-    environment(textureFileGameEnvironment), 
-    menu(textureFileMenu), tap(textureFileTap), 
-    pipe(textureFilePipe), score(textureFileScore)
-    {
-        birdBounds = bird.bird_sprite.getGlobalBounds();
-        topPipeBounds = pipe.top_pipe.getGlobalBounds();
-        bottomPipeBounds = pipe.bottom_pipe.getGlobalBounds();
 
+    // Конструктор класса Game
+    Game() : bird(textureFileBird), 
+             environment(textureFileGameEnvironment), 
+             menu(textureFileMenu), 
+             tap(textureFileTap), 
+             pipe(textureFilePipe), 
+             score(textureFileScore)
+    {
         pointAwarded = false;
     }
 
+    // Метод для отрисовки меню
     void drawMenu(RenderWindow &window) {
         window.draw(environment.background_sprite);
         window.draw(menu.game_title_sprite);
@@ -56,6 +61,7 @@ public:
         window.draw(bird.bird_sprite);
     }
 
+    // Метод для отрисовки экрана "Tap to Start"
     void drawTap(RenderWindow &window) {
         window.draw(environment.background_sprite);
         window.draw(environment.base1_sprite);
@@ -67,77 +73,46 @@ public:
         window.draw(tap.get_ready_sprite);
     }
 
+    // Метод для отрисовки основного экрана игры
     void drawStart(RenderWindow &window) {
         window.draw(environment.background_sprite); // Отрисовка фона
         window.draw(pipe.bottom_pipe);
-        window.draw(pipe.top_pipe);          // Отрисовка птички перед трубами
+        window.draw(pipe.top_pipe); // Отрисовка труб
         window.draw(environment.base1_sprite);
         window.draw(environment.base2_sprite);
-        window.draw(bird.bird_sprite);
-        score.draw(window);
+        window.draw(bird.bird_sprite); // Отрисовка птички
+        score.draw(window); // Отрисовка счета
     }
 
+    // Главный игровой цикл
     void run() {
         RenderWindow window(VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Flappy Bird", Style::Close);
         window.setFramerateLimit(60);
 
         Clock clock;
-        bool gameOver = false;  // Флаг завершения игры
+        bool gameOver = false;
 
-        while (window.isOpen())
-        {
-            Vector2i mousePos = Mouse::getPosition(window);
+        while (window.isOpen()) {
+            Event event;
+
+            while (window.pollEvent(event)) {
+                InputHandler::handleInput(event, window, stateManager, bird, menu, game_over, pipe, score, sound);
+            }
 
             float time = clock.getElapsedTime().asMicroseconds();
             clock.restart();
+
             time = time / 800;
 
-            Event event;
-
-            while (window.pollEvent(event))
-            {
-                if (event.type == sf::Event::Closed)
-                    window.close();
-
-                if(event.type == Event::MouseButtonPressed) {
-                    if(event.mouseButton.button == Mouse::Left) {
-                        if (isTap) {
-                            bird.jump();
-                            sound.flap.play();
-
-                            isTap = false;
-                            isStart = true;
-                        } 
-                        
-                        else if (isMenu) {
-                            if(menu.button_play_sprite.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
-                                isMenu = false;
-                                isTap = true;
-
-                                bird.setPosition(30, 150);
-                                sound.swoosh.play();
-                            }
-                        }
-
-                        else if (isStart && !gameOver) {
-                            bird.jump();
-                            sound.flap.play();
-                        }
-                    }
-                }
-            }
-
-            if (!gameOver) {
+            if (!stateManager.isGameOver()) {
                 environment.base_update(time);
-                bird.update(time);
+                bird.update(time, stateManager);
                 tap.tap_update();
-                pipe.update(time);
+                pipe.update(time, stateManager);
 
-                // Начисление баллов при прохождении трубы
-                if (pipe.bottom_pipe.getPosition().x < bird.bird_sprite.getPosition().x && !pointAwarded){
+                if (pipe.bottom_pipe.getPosition().x < bird.bird_sprite.getPosition().x - 52 && !pointAwarded) {
                     score.addScore(1);
                     sound.bonus.play();
-                    
                     pointAwarded = true;
                 }
 
@@ -145,7 +120,6 @@ public:
                     pointAwarded = false;
                 }
 
-                // Проверка на столкновение с трубой или землей
                 birdBounds = bird.bird_sprite.getGlobalBounds();
                 topPipeBounds = pipe.top_pipe.getGlobalBounds();
                 bottomPipeBounds = pipe.bottom_pipe.getGlobalBounds();
@@ -153,27 +127,34 @@ public:
                 if (birdBounds.intersects(topPipeBounds) || birdBounds.intersects(bottomPipeBounds) || bird.bird_sprite.getPosition().y + birdBounds.height >= environment.base1_sprite.getPosition().y) {
                     gameOver = true;
                     sound.hit.play();
-                    // Вы можете добавить задержку перед возвратом в меню или показом экрана завершения
+                    stateManager.setState(GameState::GameOver);
                 }
             }
 
             window.clear();
 
-            if (isMenu) {
+            if (stateManager.isMenu()) {
                 drawMenu(window);
             }
 
-            if (isTap) {
+            if (stateManager.isTap()) {
                 drawTap(window);
             }
 
-            if (isStart) {
+            if (stateManager.isStart()) {
                 drawStart(window);
             }
 
-            if (gameOver) {
-                // Можно отобразить экран завершения игры или вернуться в меню
-                // drawGameOver(window); - нужно реализовать функцию для отображения экрана завершения игры
+            if (stateManager.isGameOver()) {
+                window.draw(environment.background_sprite); // Отрисовка фона
+                window.draw(pipe.bottom_pipe);
+                window.draw(pipe.top_pipe); // Отрисовка труб
+                window.draw(environment.base1_sprite);
+                window.draw(environment.base2_sprite);
+                window.draw(bird.bird_sprite); // Отрисовка птички
+                score.draw(window); // Отрисовка счета
+                window.draw(game_over.game_over_title);
+                window.draw(game_over.ok);
             }
 
             window.display();
